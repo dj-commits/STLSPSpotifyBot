@@ -1,3 +1,4 @@
+from tkinter.messagebox import CANCEL
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import creds
@@ -17,7 +18,9 @@ def CreatePlaylist(sp, title):
     
 
 def AddToPlaylist(link):
-    sp.playlist_add_items(playlist_ID, [link])
+    # Check for song, if not in playlist, then add to playlist
+    
+    sp.playlist_add_items(playlist_ID, link)
     
     
     
@@ -34,9 +37,21 @@ async def on_ready(self):
 @discordClient.event
 async def on_message(message):
     if 'spotify.com' in message.content:
-        print(f'Detected spotify link from: {message.author} ')
-        link = message.content
-        AddToPlaylist(link)
+        # breaks if some dumbass only types spotify.com out
+        link = []
+        if(message.content.count('spotify.com') > 1):
+            numberOfLinks = message.content.count('spotify.com')
+            while(numberOfLinks > 0):
+                print(numberOfLinks)
+                beginning = message.content.index('https://')
+                end = message.content.index(' ')
+                link.append(message.content[beginning:end])
+                numberOfLinks -= 1
+        else:
+            link.append(message.content)
+        if(link):
+            AddToPlaylist(link)
+        
 
 
 
