@@ -1,3 +1,4 @@
+from math import e
 from tkinter.messagebox import CANCEL
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
@@ -20,8 +21,16 @@ def CreatePlaylist(sp, title):
 def AddToPlaylist(link):
     # Check for song, if not in playlist, then add to playlist
     
-    sp.playlist_add_items(playlist_ID, link)
-    
+    if(link):
+        if(CheckIfExistsInPlaylist(link)):
+            sp.playlist_add_items(playlist_ID, link)
+        
+def CheckIfExistsInPlaylist(link):
+    items = sp.playlist_items(playlist_ID)
+    for i in items:
+        if i is link:
+            return False
+    return True
     
     
 sp = SpotifyAuthentication(creds.SP_CLIENT_ID, creds.SP_CLIENT_SECRET)
