@@ -18,17 +18,17 @@ def CreatePlaylist(sp, title):
     return sp.user_playlist_create(user_id, title)['id']
     
 
-def AddToPlaylist(link):
+def AddToPlaylist(track):
     # Check for song, if not in playlist, then add to playlist
     
-    if(link):
-        if(CheckIfExistsInPlaylist(link)):
-            sp.playlist_add_items(playlist_ID, link)
+    if(CheckIfExistsInPlaylist(track)):
+        sp.playlist_add_items(playlist_ID,  [track['uri']])
         
-def CheckIfExistsInPlaylist(link):
+def CheckIfExistsInPlaylist(track):
     items = sp.playlist_items(playlist_ID)
-    for i in items:
-        if i is link:
+    track = sp.track(track['id'])
+    for i in items['items']:
+        if i['track']['uri'] == track['uri']:
             return False
     return True
     
@@ -46,20 +46,14 @@ async def on_ready(self):
 @discordClient.event
 async def on_message(message):
     if 'spotify.com' in message.content:
-        # breaks if some dumbass only types spotify.com out
         link = []
-        if(message.content.count('spotify.com') > 1):
-            numberOfLinks = message.content.count('spotify.com')
-            while(numberOfLinks > 0):
-                print(numberOfLinks)
-                beginning = message.content.index('https://')
-                end = message.content.index(' ')
-                link.append(message.content[beginning:end])
-                numberOfLinks -= 1
-        else:
-            link.append(message.content)
+        for word in message.content.split():
+            if 'spotify.com' in word:
+                link.append(word)
         if(link):
-            AddToPlaylist(link)
+            for i in link:
+                track = sp.track(i)
+                AddToPlaylist(track)
         
 
 
