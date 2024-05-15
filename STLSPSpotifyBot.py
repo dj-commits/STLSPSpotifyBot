@@ -35,9 +35,24 @@ def CheckIfExistsInPlaylist(track):
     
 sp = SpotifyAuthentication(creds.SP_CLIENT_ID, creds.SP_CLIENT_SECRET)
 playlist_ID = r'0L8hjTMfDnWNzW95AhAmt7'
+message_check = ':banger:'
 intents = discord.Intents.default()
 intents.message_content = True
 discordClient = discord.Client(intents=intents)
+messages = {}
+playlist_titles = {"January" : "STLSP January 2025 Playlist",
+                   "February" : "STLSP February 2025 Playlist",
+                   "March" : "STLSP March 2025 Playlist",
+                   "April" : "STLSP April 2025 Playlist",
+                   "May" : "STLSP May 2024 Playlist",
+                   "June" : "STLSP June 2024 Playlist",
+                   "July" : "STLSP July 2024 Playlist",
+                   "August" : "STLSP August 2024 Playlist",
+                   "September" : "STLSP September 2024 Playlist",
+                   "October" : "STLSP October 2024 Playlist",
+                   "November" : "STLSP November 2024 Playlist",
+                   "December" : "STLSP December 2024 Playlist",}
+
 
 @discordClient.event
 async def on_ready(self):
@@ -52,8 +67,21 @@ async def on_message(message):
                 link.append(word)
         if(link):
             for i in link:
-                track = sp.track(i)
-                AddToPlaylist(track)
+                message_track = sp.track(i)
+                messages[f'{message.id}'] = message_track
+
+
+@discordClient.event
+async def on_reaction_add(reaction, user):
+    if message_check in str(reaction):
+        for i in messages:
+            if i == str(reaction.message.id):
+                AddToPlaylist(messages[i])
+               
+
+
+
+#TODO: handle removal of banger emoji, archival and creation of playlist
         
 
 
