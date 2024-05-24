@@ -1,6 +1,4 @@
-from datetime import date
-from math import e
-from tkinter.messagebox import CANCEL
+import datetime
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import creds
@@ -21,17 +19,18 @@ intents = discord.Intents.default()
 intents.message_content = True
 discordClient = discord.Client(intents=intents)
 messages = {}
-month = date.month
-year = date.year
+today = datetime.date.today()
+month = today.strftime("%B")
+year = today.strftime("%Y")
+me = sp.me()
 
 def CreatePlaylist(sp, title):
-    current_playlists = sp.user_playlists(sp.me()['id'], fields="name")
-    for i in current_playlists:
-        if i["name"] == f"STLSP {month} {year} Playlist":
+    current_playlists = sp.user_playlists(sp.me()['id'])
+    for i in current_playlists["items"]:
+        if f"STLSP {month} {year} Playlist" in i["name"]:
             return i['id']
-        else:
-            user_id = sp.me()['id']
-            return sp.user_playlist_create(user_id, title)['id']
+    user_id = sp.me()['id']
+    return sp.user_playlist_create(user_id, title)['id']   
         
     
     
