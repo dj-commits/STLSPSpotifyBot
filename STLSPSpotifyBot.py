@@ -23,6 +23,19 @@ today = datetime.date.today()
 month = today.strftime("%B")
 year = today.strftime("%Y")
 me = sp.me()
+message_counter = 0
+
+
+def UpdateCurrentPlaylist(this_sp):
+    global month
+    new_today = datetime.date.today()
+    if(new_today.strftime("%B") != month):
+        today = datetime.date.today()
+        month = today.strftime("%B")
+        year = today.strftime("%Y")
+        playlist_ID = CreatePlaylist(sp, f"STLSP {month} {year} Playlist")
+    
+
 
 def CreatePlaylist(sp, title):
     current_playlists = sp.user_playlists(sp.me()['id'])
@@ -35,9 +48,7 @@ def CreatePlaylist(sp, title):
     
     
 
-def AddToPlaylist(track):
-    # Check that playlist exists, if so, check if duplicate, if not, add to playlist
-    
+def AddToPlaylist(track):    
     if(CheckIfExistsInPlaylist(track)):
         sp.playlist_add_items(playlist_ID,  [track['uri']])
         
@@ -48,6 +59,12 @@ def CheckIfExistsInPlaylist(track):
         if i['track']['uri'] == track['uri']:
             return False
     return True
+
+def Promote():
+    global sp
+    playlist_link = sp.playlist(playlist_ID)["external_urls"]["spotify"]
+    promotion = f"STLSP's {month} {year} Playlist is available here: \n {playlist_link} \n"
+    return promotion
     
 
 
@@ -58,14 +75,19 @@ async def on_ready(self):
 @discordClient.event
 async def on_message(message):
     global playlist_ID
+    global message_counter
     if playlist_ID == "":
         playlist_ID = CreatePlaylist(sp, f"STLSP {month} {year} Playlist" )
+    if message_counter >= 2:
+        await message.channel.send(Promote())
+        message_counter = 0
     if 'spotify.com' in message.content:
         link = []
         for word in message.content.split():
             if 'spotify.com' in word:
                 link.append(word)
         if(link):
+            message_counter += 1
             for i in link:
                 message_track = sp.track(i)
                 messages[f'{message.id}'] = message_track
@@ -73,8 +95,12 @@ async def on_message(message):
 
 @discordClient.event
 async def on_reaction_add(reaction, user):
+    global sp
+    UpdateCurrentPlaylist(sp)
     if message_check in str(reaction):
         for i in messages:
+            if "STLSP's {month} {year} Playlist is available here: \n {playlist_link} \n" in reaction.message.content:
+                break
             if i == str(reaction.message.id):
                 AddToPlaylist(messages[i])
                
